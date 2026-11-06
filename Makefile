@@ -59,3 +59,13 @@ bsgsd:
 	g++ -m64 -march=native -mtune=native -mssse3 -Wall -Wextra -Wno-deprecated-copy -Ofast -o hash/sha256_sse.o -ftree-vectorize -flto -c hash/sha256_sse.cpp
 	g++ -m64 -march=native -mtune=native -mssse3 -Wall -Wextra -Wno-deprecated-copy -Ofast -ftree-vectorize -o bsgsd bsgsd.cpp base58.o rmd160.o hash/ripemd160.o hash/ripemd160_sse.o hash/sha256.o hash/sha256_sse.o bloom.o oldbloom.o xxhash.o util.o Int.o  Point.o SECP256K1.o  IntMod.o  Random.o IntGroup.o sha3.o keccak.o  -lm -lpthread
 	rm -r *.o
+
+# Optional CUDA program; the existing CPU build is unchanged.
+NVCC ?= nvcc
+NVCCFLAGS ?= -O2 -std=c++14
+cuda: keyhunt-cuda
+keyhunt-cuda: cuda/search.cu cuda/curve.h cuda/common.h
+	$(NVCC) $(NVCCFLAGS) -o $@ cuda/search.cu
+cuda-test:
+	python3 cuda/test_curve.py
+.PHONY: cuda cuda-test

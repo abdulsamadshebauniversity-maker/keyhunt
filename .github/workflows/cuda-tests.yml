@@ -1,0 +1,26 @@
+name: CUDA search CPU-side tests
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+jobs:
+  cpu-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test shared curve code and simulated search kernels
+        run: make cuda-test
+  cuda-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install CUDA compiler and runtime libraries
+        run: |
+          python3 -m pip install --target "$RUNNER_TEMP/cuda" \
+            nvidia-cuda-nvcc==13.0.88 nvidia-cuda-runtime==13.0.88 \
+            nvidia-cuda-crt==13.0.88 nvidia-nvvm==13.0.88
+      - name: Compile CUDA program
+        run: |
+          make cuda NVCC="$RUNNER_TEMP/cuda/nvidia/cu13/bin/nvcc" \
+            NVCCFLAGS="-O2 -std=c++14 -L$RUNNER_TEMP/cuda/nvidia/cu13/lib"
+          ./keyhunt-cuda --help
